@@ -33,10 +33,48 @@ local split = function(str, sep)
   return t
 end
 
+local function run_hledger_accounts(account_path)
+  -- if the system is not Windows, run the command directly
+  if vim.loop.os_uname().sysname ~= "Windows_NT" then
+    local cmd = string.format(
+      "%s accounts -f %s 2>&1",
+      vim.fn.shellescape(vim.b.hledger_bin),
+      vim.fn.shellescape(account_path)
+    )
+    local p = assert(io.popen(cmd))
+    local out = p:read("*all")
+    p:close()
+    return out
+  end
+
+  -- on Windows, create and run a temporary .bat file
+  local bat = vim.fn.tempname() .. ".bat"
+  local hbin  = vim.fn.shellescape(vim.b.hledger_bin)
+  local jfile = vim.fn.shellescape(account_path)
+
+  -- bat 내에서도 quoting은 유지 (vim-plug 스타일)
+  local lines = {
+    "@echo off",
+    "setlocal ENABLEDELAYEDEXPANSION",
+    "chcp 65001>nul",
+    string.format("%s accounts -f %s 2>&1", hbin, jfile),
+    "endlocal",
+  }
+
+  vim.fn.writefile(lines, bat)
+
+  -- run the .bat file
+  local cmd = string.format('cmd /C "%s"', bat)
+  local output = vim.fn.system(cmd)
+
+  -- delete the temporary .bat file
+  pcall(vim.fn.delete, bat)
+
+  return output
+end
+
 local get_items = function(account_path)
-  local openPop = assert(io.popen(vim.b.hledger_bin .. ' accounts -f ' .. account_path))
-  local output = openPop:read('*all')
-  openPop:close()
+  local output = run_hledger_accounts(account_path)
   local t = split(output, "\n")
 
   local items = {}
