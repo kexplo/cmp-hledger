@@ -15,7 +15,7 @@ yay -S neovim hledger
 Install with your favorite package manager:
 
 ```lua
-use('kirasok/cmp-hledger')
+use('kexplo/cmp-hledger')
 ```
 
 Then, setup completion source:
@@ -40,4 +40,5 @@ Source code available under [GNU GENERAL PUBLIC LICENSE](https://www.gnu.org/lic
 
 ## Credits
 
+Thanks [kirasok/cmp-hledger](https://github.com/kirasok/cmp-hledger) for initial implementation.
 Thanks [cmp-beancount](https://github.com/crispgm/cmp-beancount) for providng example of making [cmp](https://github.com/hrsh7th/nvim-cmp) source.
